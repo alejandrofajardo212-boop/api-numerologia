@@ -1,22 +1,24 @@
-require('dotenv').config();
-const express = require('express');
-const connectDB = require('./config/db.js');
+import express from 'express';
+import cors from 'cors';
+import { auditLogger } from './middlewares/auditMiddleware.js';
+
+import authRoutes from './routes/authRoutes.js';
+import numerologyRoutes from './routes/numerologyRoutes.js';
+import readingRoutes from './routes/readingRoutes.js';
+import compatibilityRoutes from './routes/compatibilityRoutes.js';
 
 const app = express();
 
-// Middleware para interpretar peticiones en formato JSON
+app.use(cors());
 app.use(express.json());
 
-// Conectar a la base de datos MongoDB
-connectDB();
+// Middleware global de auditoría (registra métodos, rutas, status)
+app.use(auditLogger);
 
-// Ruta base de prueba
-app.get('/api/v1/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'API de Numerología en funcionamiento' });
-});
+// Montaje de Endpoints v1
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/numerology', numerologyRoutes);
+app.use('/api/v1/readings', readingRoutes);
+app.use('/api/v1/compatibility', compatibilityRoutes);
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en el puerto ${PORT}`);
-});
+export default app;
