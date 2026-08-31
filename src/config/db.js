@@ -1,13 +1,15 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import dns from 'node:dns';
 
-const connectDB = async () => {
+// Fuerza a Node a resolver la dirección +srv usando DNS de Google
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+export const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB Conectado: ${conn.connection.host}`);
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('Conexión exitosa a MongoDB');
   } catch (error) {
-    console.error(`Error de conexión a MongoDB: ${error.message}`);
-    process.exit(1); // Detiene la aplicación si la conexión falla
+    console.error('Error conectando a MongoDB:', error.message);
+    process.exit(1);
   }
 };
-
-module.exports = connectDB;

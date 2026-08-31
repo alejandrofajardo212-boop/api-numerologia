@@ -2,10 +2,11 @@ import { GoogleGenAI } from '@google/genai';
 import NumerologyProfile from '../models/NumerologyProfile.js';
 import Reading from '../models/Reading.js';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 export const generateReading = async (req, res) => {
   try {
+    // AHORA SE CREA DENTRO DE LA FUNCIÓN:
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
     const { reading_type = 'general' } = req.body;
     const profile = await NumerologyProfile.findOne({ user_id: req.user.id }).populate('user_id', 'name');
 
@@ -19,19 +20,17 @@ Sus números centrales son:
 - Expresión: ${profile.expression_number}
 - Alma: ${profile.soul_urge_number}
 
-Por favor brinda una interpretación clara, profesional, inspiradora y dividida en secciones cortas.`;
+Brinda una interpretación clara e inspiradora.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
 
-    const aiText = response.text;
-
     const newReading = await Reading.create({
       user_id: req.user.id,
       prompt,
-      response: aiText,
+      response: response.text,
       reading_type
     });
 

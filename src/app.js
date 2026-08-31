@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { auditLogger } from './middlewares/auditMiddleware.js';
+import { verifyToken } from './middlewares/authMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
 import numerologyRoutes from './routes/numerologyRoutes.js';
@@ -12,11 +13,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Middleware global de auditoría (registra métodos, rutas, status)
+// Middleware de auditoría global
 app.use(auditLogger);
 
-// Montaje de Endpoints v1
+// 1. RUTAS PÚBLICAS (No piden token)
 app.use('/api/v1/auth', authRoutes);
+
+// 2. MIDDLEWARE PROTECTOR (Cualquier ruta abajo de esta línea EXIGE Token JWT)
+app.use(verifyToken);
+
+// 3. RUTAS PRIVADAS / PROTEGIDAS
 app.use('/api/v1/numerology', numerologyRoutes);
 app.use('/api/v1/readings', readingRoutes);
 app.use('/api/v1/compatibility', compatibilityRoutes);

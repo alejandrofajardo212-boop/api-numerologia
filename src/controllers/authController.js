@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+// 1. Registrar usuario
 export const register = async (req, res) => {
   try {
     const { name, email, password, birth_date } = req.body;
@@ -23,6 +24,7 @@ export const register = async (req, res) => {
   }
 };
 
+// 2. Iniciar sesión
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -33,10 +35,49 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) return res.status(400).json({ error: 'Credenciales inválidas' });
 
-    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    const secret = process.env.JWT_SECRET || 'secreto_super_seguro_numerologia_2026';
 
-    res.json({ message: 'Login exitoso', token });
+    const accessToken = jwt.sign(
+      { id: user._id, name: user.name },
+      secret,
+      { expiresIn: '1h' }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      secret,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Login exitoso',
+      tokens: {
+        access_token: accessToken,
+        refresh_token: refreshToken
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Error en esa vuelta del login: ' + error.message });
+  }
+};
+
+// 3. Refrescar token
+export const refreshToken = async (req, res) => {
+  const { refresh_token } = req.body;
+  if (!refresh_token) return res.status(401).json({ error: 'Refresh token requerido' });
+
+  try {
+    const secret = process.env.JWT_SECRET || 'secreto_super_seguro_numerologia_2026';
+    const decoded = jwt.verify(refresh_token, secret);
+    
+    const newAccessToken = jwt.sign(
+      { id: decoded.id },
+      secret,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ access_token: newAccessToken });
+  } catch (error) {
+    res.status(403).json({ error: 'Refresh token inválido o expirado' });
   }
 };
