@@ -5,6 +5,7 @@ import { verifyToken } from './middlewares/authMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
 import numerologyRoutes from './routes/numerologyRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import readingRoutes from './routes/readingRoutes.js';
 import compatibilityRoutes from './routes/compatibilityRoutes.js';
 
@@ -15,6 +16,8 @@ app.use(express.json());
 
 // Middleware de auditoría global
 app.use(auditLogger);
+
+app.use('/api/v1/users', userRoutes);
 
 // 1. RUTAS PÚBLICAS (No piden token)
 app.use('/api/v1/auth', authRoutes);

@@ -1,9 +1,21 @@
 import { Router } from 'express';
-import { generateReading, getHistory } from '../controllers/readingController.js';
-import { verifyToken } from '../middlewares/authMiddleware.js';
+import { 
+  generateReading, 
+  getHistory, 
+  getReadingById, 
+  deleteReading 
+} from '../controllers/readingController.js';
+
+import { 
+  validarGenerarLectura, 
+  validarIdLectura 
+} from '../validators/readingValidator.js';
 
 const router = Router();
-router.post('/generate', verifyToken, generateReading);
-router.get('/history', verifyToken, getHistory);
+
+router.post('/', [validarGenerarLectura], generateReading);
+router.get('/', getHistory);
+router.get('/:id', [validarIdLectura], getReadingById);
+router.delete('/:id', [validarIdLectura], deleteReading);
 
 export default router;
